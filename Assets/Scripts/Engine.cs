@@ -106,10 +106,10 @@ public class Engine : MonoBehaviour
         switch (Application.systemLanguage)
         {
             case SystemLanguage.Russian:
-                Localization.instance.currentLanguage = "Russian";
+                //Localization.instance.currentLanguage = "Russian";
                 break;
             case SystemLanguage.German:
-                Localization.instance.currentLanguage = "German";
+                //Localization.instance.currentLanguage = "German";
                 break;
             case SystemLanguage.Unknown:
                
@@ -132,13 +132,13 @@ public class Engine : MonoBehaviour
 
                 #else
 
-                Localization.instance.currentLanguage = "English";
+                //Localization.instance.currentLanguage = "English";
 
                 #endif
 
                 break;
             default:
-                Localization.instance.currentLanguage = "English";
+                //Localization.instance.currentLanguage = "English";
                 break;
         }
     }

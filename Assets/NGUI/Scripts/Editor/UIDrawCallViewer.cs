@@ -1,7 +1,7 @@
-//----------------------------------------------
+//-------------------------------------------------
 //            NGUI: Next-Gen UI kit
-// Copyright © 2011-2014 Tasharen Entertainment
-//----------------------------------------------
+// Copyright © 2011-2017 Tasharen Entertainment Inc
+//-------------------------------------------------
 
 using UnityEditor;
 using UnityEngine;
@@ -106,17 +106,17 @@ public class UIDrawCallViewer : EditorWindow
 				GUI.color = highlight ? Color.white : new Color(0.8f, 0.8f, 0.8f);
 
 				NGUIEditorTools.BeginContents();
-				EditorGUILayout.ObjectField("Material", dc.baseMaterial, typeof(Material), false);
+				EditorGUILayout.ObjectField("Material", dc.dynamicMaterial, typeof(Material), false);
 
 				int count = 0;
 
-				for (int a = 0; a < UIPanel.list.size; ++a)
+				for (int a = 0; a < UIPanel.list.Count; ++a)
 				{
-					UIPanel p = UIPanel.list.buffer[a];
+					UIPanel p = UIPanel.list[a];
 
-					for (int b = 0; b < p.widgets.size; ++b)
+					for (int b = 0; b < p.widgets.Count; ++b)
 					{
-						UIWidget w = p.widgets.buffer[b];
+						UIWidget w = p.widgets[b];
 						if (w.drawCall == dc) ++count;
 					}
 				}
@@ -127,13 +127,13 @@ public class UIDrawCallViewer : EditorWindow
 				list[0] = count.ToString();
 				count = 0;
 
-				for (int a = 0; a < UIPanel.list.size; ++a)
+				for (int a = 0; a < UIPanel.list.Count; ++a)
 				{
-					UIPanel p = UIPanel.list.buffer[a];
+					UIPanel p = UIPanel.list[a];
 
-					for (int b = 0; b < p.widgets.size; ++b)
+					for (int b = 0; b < p.widgets.Count; ++b)
 					{
-						UIWidget w = p.widgets.buffer[b];
+						UIWidget w = p.widgets[b];
 
 						if (w.drawCall == dc)
 						{
@@ -145,20 +145,20 @@ public class UIDrawCallViewer : EditorWindow
 
 				GUILayout.BeginHorizontal();
 				int sel = EditorGUILayout.Popup("Widgets", 0, list);
-				GUILayout.Space(18f);
+				NGUIEditorTools.DrawPadding();
 				GUILayout.EndHorizontal();
 
 				if (sel != 0)
 				{
 					count = 0;
 
-					for (int a = 0; a < UIPanel.list.size; ++a)
+					for (int a = 0; a < UIPanel.list.Count; ++a)
 					{
-						UIPanel p = UIPanel.list.buffer[a];
+						UIPanel p = UIPanel.list[a];
 
-						for (int b = 0; b < p.widgets.size; ++b)
+						for (int b = 0; b < p.widgets.Count; ++b)
 						{
-							UIWidget w = p.widgets.buffer[b];
+							UIWidget w = p.widgets[b];
 
 							if (w.drawCall == dc && ++count == sel)
 							{
@@ -172,13 +172,13 @@ public class UIDrawCallViewer : EditorWindow
 				GUILayout.BeginHorizontal();
 				EditorGUILayout.LabelField("Render Q", dc.finalRenderQueue.ToString(), GUILayout.Width(120f));
 				bool draw = (Visibility)EditorGUILayout.EnumPopup(dc.isActive ? Visibility.Visible : Visibility.Hidden) == Visibility.Visible;
-				GUILayout.Space(18f);
+				NGUIEditorTools.DrawPadding();
 				GUILayout.EndHorizontal();
 
 				if (dc.isActive != draw)
 				{
 					dc.isActive = draw;
-					UnityEditor.EditorUtility.SetDirty(dc.manager);
+					NGUITools.SetDirty(dc.manager);
 				}
 
 				GUILayout.BeginHorizontal();
@@ -190,7 +190,7 @@ public class UIDrawCallViewer : EditorWindow
 					{
 						Selection.activeGameObject = dc.manager.gameObject;
 					}
-					GUILayout.Space(18f);
+					NGUIEditorTools.DrawPadding();
 				}
 				GUILayout.EndHorizontal();
 

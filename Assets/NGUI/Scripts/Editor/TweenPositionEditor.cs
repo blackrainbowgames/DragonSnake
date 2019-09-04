@@ -1,7 +1,7 @@
-//----------------------------------------------
+//-------------------------------------------------
 //            NGUI: Next-Gen UI kit
-// Copyright © 2011-2014 Tasharen Entertainment
-//----------------------------------------------
+// Copyright © 2011-2017 Tasharen Entertainment Inc
+//-------------------------------------------------
 
 using UnityEngine;
 using UnityEditor;
@@ -25,7 +25,7 @@ public class TweenPositionEditor : UITweenerEditor
 			NGUIEditorTools.RegisterUndo("Tween Change", tw);
 			tw.from = from;
 			tw.to = to;
-			UnityEditor.EditorUtility.SetDirty(tw);
+			NGUITools.SetDirty(tw);
 		}
 
 		DrawCommonProperties();

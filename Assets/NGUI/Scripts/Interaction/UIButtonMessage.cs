@@ -1,7 +1,7 @@
-//----------------------------------------------
+//-------------------------------------------------
 //            NGUI: Next-Gen UI kit
-// Copyright © 2011-2014 Tasharen Entertainment
-//----------------------------------------------
+// Copyright © 2011-2017 Tasharen Entertainment Inc
+//-------------------------------------------------
 
 using UnityEngine;
 
@@ -9,7 +9,7 @@ using UnityEngine;
 /// Sends a message to the remote object when something happens.
 /// </summary>
 
-[AddComponentMenu("NGUI/Interaction/Button Message")]
+[AddComponentMenu("NGUI/Interaction/Button Message (Legacy)")]
 public class UIButtonMessage : MonoBehaviour
 {
 	public enum Trigger

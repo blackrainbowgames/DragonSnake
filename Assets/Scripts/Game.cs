@@ -282,7 +282,7 @@ public class Game : LogicBase
         var sprite = Engine.Field.Sprites[(int) position.x, (int) position.y];
         var ps = sparks.GetComponent<ParticleSystem>();
 
-        ps.renderer.material.color = color;
+        ps.GetComponent<Renderer>().material.color = color;
         ps.maxParticles = new CryptoRandom().Next(4, 10);
         sparks.transform.position = sprite.transform.position;
         Destroy(sparks, ps.startLifetime);

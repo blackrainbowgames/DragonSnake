@@ -1,7 +1,7 @@
-//----------------------------------------------
+//-------------------------------------------------
 //            NGUI: Next-Gen UI kit
-// Copyright © 2011-2014 Tasharen Entertainment
-//----------------------------------------------
+// Copyright © 2011-2017 Tasharen Entertainment Inc
+//-------------------------------------------------
 
 using UnityEngine;
 using AnimationOrTween;
@@ -15,6 +15,8 @@ using System.Collections.Generic;
 [AddComponentMenu("NGUI/Interaction/Play Tween")]
 public class UIPlayTween : MonoBehaviour
 {
+	static public UIPlayTween current;
+
 	/// <summary>
 	/// Target on which there is one or more tween.
 	/// </summary>
@@ -92,7 +94,7 @@ public class UIPlayTween : MonoBehaviour
 			eventReceiver = null;
 			callWhenFinished = null;
 #if UNITY_EDITOR
-			UnityEditor.EditorUtility.SetDirty(this);
+			NGUITools.SetDirty(this);
 #endif
 		}
 	}
@@ -105,7 +107,7 @@ public class UIPlayTween : MonoBehaviour
 		{
 			tweenTarget = gameObject;
 #if UNITY_EDITOR
-			UnityEditor.EditorUtility.SetDirty(this);
+			NGUITools.SetDirty(this);
 #endif
 		}
 	}
@@ -125,7 +127,21 @@ public class UIPlayTween : MonoBehaviour
 			if (trigger == Trigger.OnHover || trigger == Trigger.OnHoverTrue)
 				mActivated = (UICamera.currentTouch.current == gameObject);
 		}
+
+		UIToggle toggle = GetComponent<UIToggle>();
+		if (toggle != null) EventDelegate.Add(toggle.onChange, OnToggle);
 	}
+
+	void OnDisable ()
+	{
+#if UNITY_EDITOR
+		if (!Application.isPlaying) return;
+#endif
+		UIToggle toggle = GetComponent<UIToggle>();
+		if (toggle != null) EventDelegate.Remove(toggle.onChange, OnToggle);
+	}
+
+	void OnDragOver () { if (trigger == Trigger.OnHover) OnHover(true); }
 
 	void OnHover (bool isOver)
 	{
@@ -135,9 +151,37 @@ public class UIPlayTween : MonoBehaviour
 				(trigger == Trigger.OnHoverTrue && isOver) ||
 				(trigger == Trigger.OnHoverFalse && !isOver))
 			{
+				if (isOver == mActivated) return;
+
+				// Hover out action happened on a child object -- we want to maintain the hovered state
+				if (!isOver && UICamera.hoveredObject != null && UICamera.hoveredObject.transform.IsChildOf(transform))
+				{
+					// Subscribe to a global hover listener so we can keep receiving hover notifications
+					UICamera.onHover += CustomHoverListener;
+					isOver = true;
+					if (mActivated) return;
+				}
+
 				mActivated = isOver && (trigger == Trigger.OnHover);
 				Play(isOver);
 			}
+		}
+	}
+
+	/// <summary>
+	/// Wait for the hover event to happen outside the object's hierarchy before removing the hovered state.
+	/// </summary>
+
+	void CustomHoverListener (GameObject go, bool isOver)
+	{
+		if (!this) return;
+		var myGo = gameObject;
+		var hover = myGo && go && (go == myGo || go.transform.IsChildOf(transform));
+
+		if (!hover)
+		{
+			OnHover(false);
+			UICamera.onHover -= CustomHoverListener;
 		}
 	}
 
@@ -194,17 +238,13 @@ public class UIPlayTween : MonoBehaviour
 		}
 	}
 
-	void OnActivate (bool isActive)
+	void OnToggle ()
 	{
-		if (enabled)
-		{
-			if (trigger == Trigger.OnActivate ||
-				(trigger == Trigger.OnActivateTrue && isActive) ||
-				(trigger == Trigger.OnActivateFalse && !isActive))
-			{
-				Play(isActive);
-			}
-		}
+		if (!enabled || UIToggle.current == null) return;
+		if (trigger == Trigger.OnActivate ||
+			(trigger == Trigger.OnActivateTrue && UIToggle.current.value) ||
+			(trigger == Trigger.OnActivateFalse && !UIToggle.current.value))
+			Play(UIToggle.current.value);
 	}
 
 	void Update ()
@@ -293,16 +333,21 @@ public class UIPlayTween : MonoBehaviour
 					// Toggle or activate the tween component
 					if (playDirection == Direction.Toggle)
 					{
+						// Listen for tween finished messages
+						EventDelegate.Add(tw.onFinished, OnFinished, true);
 						tw.Toggle();
 					}
 					else
 					{
-						if (resetOnPlay || (resetIfDisabled && !tw.enabled)) tw.ResetToBeginning();
+						if (resetOnPlay || (resetIfDisabled && !tw.enabled))
+						{
+							tw.Play(forward);
+							tw.ResetToBeginning();
+						}
+						// Listen for tween finished messages
+						EventDelegate.Add(tw.onFinished, OnFinished, true);
 						tw.Play(forward);
 					}
-
-					// Listen for tween finished messages
-					EventDelegate.Add(tw.onFinished, OnFinished, true);
 				}
 			}
 		}
@@ -314,15 +359,17 @@ public class UIPlayTween : MonoBehaviour
 
 	void OnFinished ()
 	{
-		if (--mActive == 0)
+		if (--mActive == 0 && current == null)
 		{
+			current = this;
 			EventDelegate.Execute(onFinished);
-			
+
 			// Legacy functionality
 			if (eventReceiver != null && !string.IsNullOrEmpty(callWhenFinished))
 				eventReceiver.SendMessage(callWhenFinished, SendMessageOptions.DontRequireReceiver);
 
 			eventReceiver = null;
+			current = null;
 		}
 	}
 }
